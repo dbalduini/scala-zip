@@ -3,6 +3,7 @@ package com.github.scalazip
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.ZipInputStream
+import java.util.zip.ZipEntry
 
 abstract class Zippable {
   def file: File
@@ -15,14 +16,6 @@ abstract class Zippable {
 
 trait Appendable {
   def ::(f: File): Appendable
-}
-
-case class UncompressedFile(file: File) extends Zippable with Appendable {
-
-  def zipAs(name: String) = ZipWriter.compress(name, file)
-
-  def ::(file: File) = new ZipArchive(file, Array(this.file))
-
 }
 
 case class ZipArchive(file: File, tail: Array[File]) extends Zippable with Appendable {
@@ -39,10 +32,13 @@ case object EmptyZip extends Appendable {
 
 }
 
-case class CompressedFile(name: String) {
-  
-  def this(file: File) = this(file.getName)
-  
-  def read = new ZipReader(new ZipInputStream(new FileInputStream(name))) 
-  
+case class UncompressedFile(file: File) extends Zippable with Appendable {
+
+  def zipAs(name: String) = ZipWriter.compress(name, file)
+
+  def ::(file: File) = new ZipArchive(file, Array(this.file))
+
 }
+
+
+
