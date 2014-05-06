@@ -73,6 +73,16 @@ class ZipReaderTest extends Specification {
       found.isDefined must_== true
     }
 
+    "Find a csv file in a ZipInputStream and return its InputStream" in {
+      val zis = new ZipInputStream(new FileInputStream(new File("C:\\tmp\\tmp.zip")))
+      val found = ZipReader.find(zis)(_.getName endsWith ".csv")
+      found.map {
+        is =>
+          Source.fromInputStream(is).getLines.take(10) foreach println
+      }
+      found.isDefined must_== true
+    }
+
   }
 
 }

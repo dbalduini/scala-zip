@@ -1,5 +1,4 @@
 package com.github.scalazip
-
 import java.util.zip.{ ZipEntry, ZipInputStream }
 import java.io.FileInputStream
 import scala.collection.immutable.Stream
@@ -32,11 +31,20 @@ object ZipReader extends ZipStream {
     new UncompressedFile(output)
   }
 
+  @deprecated
   def find(file: File)(p: ZipEntry => Boolean): Option[InputStream] = {
     val zf = new ZipFile(file)
     val e = zf.entries
     val maybeZentry = Stream.continually(e.nextElement).takeWhile(_ => e.hasMoreElements).find(p)
     maybeZentry.map(zf.getInputStream)
+  }
+
+  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] = {
+    val maybeEntry = Stream
+      .continually(zis.getNextEntry)
+      .takeWhile(_ != null)
+      .find(p)
+    maybeEntry.map(_ => zis)
   }
 
   def readLines(zis: ZipInputStream): Iterator[String] = {
