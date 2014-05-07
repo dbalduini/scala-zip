@@ -4,7 +4,7 @@ import scala.annotation.tailrec
 import java.util.zip.{ ZipOutputStream, ZipEntry }
 import java.io._
 
-object ZipWriter extends ZipStream {
+object ZipWriter {
 
   def compress(filename: String, files: File*) = {
     val output = new File(filename)
@@ -15,7 +15,7 @@ object ZipWriter extends ZipStream {
         val fis = new FileInputStream(input)
         val entry = new ZipEntry(input.getName)
         zos.putNextEntry(entry)
-        stream(fis, zos)
+        IOStream.stream(fis, zos)
         zos.flush()
         fis.close()
     }

@@ -9,7 +9,7 @@ import java.io.FileOutputStream
 import java.util.zip.ZipFile
 import java.io.InputStream
 
-object ZipReader extends ZipStream {
+object ZipReader {
 
   def uncompress(outputName: String, file: File): UncompressedFile = this.uncompress(outputName, new ZipInputStream(new FileInputStream(file)))
 
@@ -23,7 +23,7 @@ object ZipReader extends ZipStream {
         val newFile = new File(output, fileName)
         new File(newFile.getParent).mkdir()
         val fos = new FileOutputStream(newFile)
-        stream(zis, fos)
+        IOStream.stream(zis, fos)
         fos.close()
       }
     zis.closeEntry()
@@ -39,13 +39,8 @@ object ZipReader extends ZipStream {
     maybeZentry.map(zf.getInputStream)
   }
 
-  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] = {
-    val maybeEntry = Stream
-      .continually(zis.getNextEntry)
-      .takeWhile(_ != null)
-      .find(p)
-    maybeEntry.map(_ => zis)
-  }
+  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] =
+    Stream.continually(zis.getNextEntry).takeWhile(_ != null).find(p).map(_ => zis)
 
   def readLines(zis: ZipInputStream): Iterator[String] = {
     val entry = zis.getNextEntry

@@ -1,14 +1,11 @@
 package com.github.scalazip
 
-import org.specs2.mutable._
-import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
-import scala.collection.immutable.Stream
-import java.util.zip.ZipEntry
-import java.io.File
-import java.util.zip.ZipInputStream
-import java.io.FileInputStream
+import java.io._
+import java.util.zip._
 import scala.io.Source
+import org.specs2.mutable._
+import org.specs2.runner.JUnitRunner
+import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class ZipReaderTest extends Specification {
@@ -17,44 +14,48 @@ class ZipReaderTest extends Specification {
 
   def csvSplitter(line: String) = line.split(",") mkString "\t"
 
+  val filename = "/Users/dbalduini/Pictures/Archive.zip"
+  def newCompressedFile = new CompressedFile(filename)
+
   "ZipReaderTest" should {
+
     "Unzip a zipped file" in {
-      val zip = new CompressedFile("C:\\tmp\\livrotail.zip")
+      val zip = newCompressedFile
       val uncompressed = zip.unzipAs("C:\\tmp\\livrotail-1")
       uncompressed.file.getName must_== "livrotail-1"
     }
 
     "Unzip at source a zipped file" in {
-      val zip = new CompressedFile("C:\\tmp\\livrotail.zip")
+      val zip = newCompressedFile
       val uncompressed = zip.unzipAtSource("livrotail-2")
       uncompressed.file.getName must_== "livrotail-2"
     }
 
     "Unzip a zipped file" in {
-      val zip = new CompressedFile("C:\\tmp\\tmp.zip")
+      val zip = newCompressedFile
       val uncompressed = zip.unzipAtSource("tmp-test")
       uncompressed.file.getName must_== "tmp-test"
     }
 
+    "Get all files inside a zip archive" in {
+      val zip = newCompressedFile
+      val allFiles = zip.getFiles
+      allFiles.size must_== 4
+    }
+
     "Find a csv file and read its lines" in {
-      val zip = new CompressedFile("C:\\tmp\\tmp.zip")
-      val maybeCsv = zip.find(_.getName endsWith ".csv") { lines =>
-        //Drop the header and split the csv by `,`
-        lines.drop(1).map(_.split(","))
-      }
-      maybeCsv match {
-        case Some(lines) => lines.take(10).map(_ mkString "\t") foreach println
+      val zip = newCompressedFile
+      val maybe = zip.find(e => e.getName endsWith ".txt")
+      maybe match {
+        case Some(lines) => lines.take(10) foreach println
         case None => println("No .csv file found")
       }
-      maybeCsv.isDefined must_== true
+      maybe.isDefined must_== true
     }
 
     "Filter all csv files and read their lines" in {
-      val zip = new CompressedFile("C:\\tmp\\tmp.zip")
-      val files = zip.filter(_.getName endsWith ".csv") { lines =>
-        //Drop the header and split the csv by `,`
-        lines.drop(1).map(_.split(","))
-      }
+      val zip = newCompressedFile
+      val files = zip.filter(_.getName endsWith ".csv")
       val allLines = for {
         csv <- files
         line <- csv
@@ -65,7 +66,7 @@ class ZipReaderTest extends Specification {
     }
 
     "Find a csv file return its InputStream" in {
-      val found = ZipReader.find(new File("C:\\tmp\\tmp.zip"))(_.getName endsWith ".csv")
+      val found = ZipReader.find(new File(filename))(_.getName endsWith ".csv")
       found.map {
         is =>
           Source.fromInputStream(is).getLines.take(10) foreach println
@@ -73,14 +74,16 @@ class ZipReaderTest extends Specification {
       found.isDefined must_== true
     }
 
-    "Find a csv file in a ZipInputStream and return its InputStream" in {
-      val zis = new ZipInputStream(new FileInputStream(new File("C:\\tmp\\tmp.zip")))
-      val found = ZipReader.find(zis)(_.getName endsWith ".csv")
+    "Find a jpg in a ZipInputStream and write it to a local file" in {
+      val zis = new ZipInputStream(new FileInputStream(new File(filename)))
+      val newImage = new File("test-data", "test.jpg")
+      val fos = new FileOutputStream(newImage)
+      val found = ZipReader.find(zis)(_.getName endsWith ".jpg")
       found.map {
         is =>
-          Source.fromInputStream(is).getLines.take(10) foreach println
+          IOStream.stream(is, fos)
       }
-      found.isDefined must_== true
+      newImage.exists must_== true
     }
 
   }
