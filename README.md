@@ -7,10 +7,16 @@ scala-zip
   import com.github.scalazip._
 ```
 
-### Writing Zip Files
+### Compressing a File
 ```scala
   val myFile = new java.io.File("image.jpg")
   val zip = myFile.zipAs("image.zip")
+```
+
+### Uncompressing the file
+```scala
+  val zip = new CompressedFile("image.zip")
+  val uncompressed = zip.unzipAtSource("images")
 ```
 
 ### Reading Zip Files
