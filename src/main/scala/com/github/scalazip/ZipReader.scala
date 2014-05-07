@@ -39,8 +39,9 @@ object ZipReader {
     maybeZentry.map(zf.getInputStream)
   }
 
-  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] =
-    Stream.continually(zis.getNextEntry).takeWhile(_ != null).find(p).map(_ => zis)
+  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] = {
+    Stream.continually(zis.getNextEntry).takeWhile(_ != null).find(p).map { _ => IOStream.copy(zis) }
+  }
 
   def readLines(zis: ZipInputStream): Iterator[String] = {
     val entry = zis.getNextEntry

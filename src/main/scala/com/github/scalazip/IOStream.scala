@@ -3,12 +3,12 @@ package com.github.scalazip
 import scala.annotation.tailrec
 import java.io.OutputStream
 import java.io.InputStream
+import java.io.ByteArrayOutputStream
+import java.io.ByteArrayInputStream
 
 object IOStream {
 
-  val bufferSize = 16384
-  
-  def stream(is: InputStream, os: OutputStream) = {
+  def stream(is: InputStream, os: OutputStream, bufferSize: Int = 4096) = {
     val buffer = new Array[Byte](bufferSize)
     @tailrec
     def doStream(total: Int): Int = {
@@ -21,6 +21,13 @@ object IOStream {
       }
     }
     doStream(0)
+  }
+
+  def copy(is: InputStream, bufferSize: Int = 4096): InputStream = {
+    val baos = new ByteArrayOutputStream
+    val buffer = new Array[Byte](bufferSize)
+    stream(is, baos)
+    new ByteArrayInputStream(baos.toByteArray())
   }
 
 }

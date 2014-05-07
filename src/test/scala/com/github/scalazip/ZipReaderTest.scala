@@ -14,14 +14,14 @@ class ZipReaderTest extends Specification {
 
   def csvSplitter(line: String) = line.split(",") mkString "\t"
 
-  val filename = "/Users/dbalduini/Pictures/Archive.zip"
+  val filename = "test-data/tmp.zip"
   def newCompressedFile = new CompressedFile(filename)
 
   "ZipReaderTest" should {
 
     "Unzip a zipped file" in {
       val zip = newCompressedFile
-      val uncompressed = zip.unzipAs("C:\\tmp\\livrotail-1")
+      val uncompressed = zip.unzipAs("test-data/livrotail-1")
       uncompressed.file.getName must_== "livrotail-1"
     }
 
@@ -40,12 +40,12 @@ class ZipReaderTest extends Specification {
     "Get all files inside a zip archive" in {
       val zip = newCompressedFile
       val allFiles = zip.getFiles
-      allFiles.size must_== 4
+      allFiles.size must_== 6
     }
 
     "Find a csv file and read its lines" in {
       val zip = newCompressedFile
-      val maybe = zip.find(e => e.getName endsWith ".txt")
+      val maybe = zip.find(e => e.getName endsWith ".csv")
       maybe match {
         case Some(lines) => lines.take(10) foreach println
         case None => println("No .csv file found")
@@ -84,6 +84,26 @@ class ZipReaderTest extends Specification {
           IOStream.stream(is, fos)
       }
       newImage.exists must_== true
+    }
+
+    "Find two files in the same Input Stream" in {
+      val is: InputStream = new FileInputStream(new File(filename))
+      val zis = new ZipInputStream(is)
+      val found1 = ZipReader.find(zis)(_.getName == "LoremIpsum.txt")
+      val found2 = ZipReader.find(zis)(_.getName == "LoremIpsum2.txt")
+      println("TEXTO 1")
+      found1.map {
+        is =>
+          Source.fromInputStream(is).getLines.take(10) foreach println
+      }
+      println("TEXTO 2")
+      found2.map {
+        is =>
+          Source.fromInputStream(is).getLines.take(10) foreach println
+      }
+
+      zis.close()
+      zis.getNextEntry must throwAn[IOException]
     }
 
   }
