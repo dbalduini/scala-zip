@@ -64,8 +64,8 @@ val file3 = new File("atextfile.txt")
 
 val files = file1 :: file2 :: file3 :: EmptyZip
 
-val compressed = files.zipAs("stuff.zip")
-val uncompressed = compressed.unzipAs("stuff")
+val zip = files.zipAs("stuff.zip")
+val file = zip.unzipAs("stuff")
 ```
 
 ================
