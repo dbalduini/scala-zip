@@ -21,7 +21,7 @@ object ZipWriter {
     }
     zos.close()
     fos.close()
-    CompressedFile(output)
+    output
   }
 
 }

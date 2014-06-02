@@ -8,16 +8,17 @@ import java.util.zip.ZipEntry
 import java.io.File
 
 @RunWith(classOf[JUnitRunner])
-class ZipIntegrationTest extends Specification {
+class ZipIntegrationTest extends Specification with TestData {
 
   "ZipIntegrationTest" should {
     "Compress a File, and them uncompress it" in {
-      val file1 = new File("C:\\tmp\\download.jpg")
-      val file2 = new File("C:\\tmp\\Tard2.jpg")
+      val file1 = getResource("txt/lorem10.txt")
+      val file2 = getResource("img/github2.jpg")
       val files = file1 :: file2 :: EmptyZip
-      val compressed = files.zipAs("stuff.zip")
-      val uncompressed = compressed.unzipAs("stuff")
-      uncompressed.file.exists must_== true
+      println(files)
+      val zip = files.zipAs("./src/test/resources/stuff.zip")
+      val file = zip.unzipAs("./src/test/resources/stuff")
+      file.exists must_== true
     }
 
   }

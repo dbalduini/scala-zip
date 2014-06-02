@@ -8,43 +8,34 @@ import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
-class ZipReaderTest extends Specification {
+class ZipReaderTest extends Specification with TestData {
 
   def filterCsv(s: Stream[ZipEntry]) = s.filter(_.getName endsWith ".csv")
 
   def csvSplitter(line: String) = line.split(",") mkString "\t"
 
-  val filename = "test-data/tmp.zip"
-  def newCompressedFile = new CompressedFile(filename)
-
   "ZipReaderTest" should {
 
     "Unzip a zipped file" in {
-      val zip = newCompressedFile
-      val uncompressed = zip.unzipAs("test-data/livrotail-1")
-      uncompressed.file.getName must_== "livrotail-1"
+      val zip = new CompressedFile(getResourceName("csv/data.zip"))
+      val file = zip.unzipAs("data")
+      file.getName must_== "data"
     }
 
     "Unzip at source a zipped file" in {
-      val zip = newCompressedFile
-      val uncompressed = zip.unzipAtSource("livrotail-2")
-      uncompressed.file.getName must_== "livrotail-2"
-    }
-
-    "Unzip a zipped file" in {
-      val zip = newCompressedFile
-      val uncompressed = zip.unzipAtSource("tmp-test")
-      uncompressed.file.getName must_== "tmp-test"
+      val zip = new CompressedFile(getResourceName("csv/data.zip"))
+      val file = zip.unzipAtSource("data")
+      file.getName must_== "data"
     }
 
     "Get all files inside a zip archive" in {
-      val zip = newCompressedFile
+      val zip = new CompressedFile(getResource("txt/lorem.zip"))
       val allFiles = zip.getFiles
-      allFiles.size must_== 6
+      allFiles.size must_== 2
     }
 
     "Find a csv file and read its lines" in {
-      val zip = newCompressedFile
+      val zip = new CompressedFile(getResourceName("csv/data.zip"))
       val maybe = zip.find(e => e.getName endsWith ".csv")
       maybe match {
         case Some(lines) => lines.take(10) foreach println
@@ -53,9 +44,9 @@ class ZipReaderTest extends Specification {
       maybe.isDefined must_== true
     }
 
-    "Filter all csv files and read their lines" in {
-      val zip = newCompressedFile
-      val files = zip.filter(_.getName endsWith ".csv")
+    "Filter all txt files and read their lines" in {
+      val zip = new CompressedFile(getResourceName("txt/lorem.zip"))
+      val files = zip.filter(_.getName endsWith ".txt")
       val allLines = for {
         csv <- files
         line <- csv
@@ -65,47 +56,18 @@ class ZipReaderTest extends Specification {
       allLines must not beEmpty
     }
 
-    "Find a csv file return its InputStream" in {
-      val found = ZipReader.find(new File(filename))(_.getName endsWith ".csv")
-      found.map {
-        is =>
-          Source.fromInputStream(is).getLines.take(10) foreach println
-      }
-      found.isDefined must_== true
-    }
-
     "Find a jpg in a ZipInputStream and write it to a local file" in {
-      val zis = new ZipInputStream(new FileInputStream(new File(filename)))
-      val newImage = new File("test-data", "test.jpg")
+      val zis = new ZipInputStream(new FileInputStream(getResource("img/images.zip")))
+      val newImage = getResource("output.jpg")
       val fos = new FileOutputStream(newImage)
       val found = ZipReader.find(zis)(_.getName endsWith ".jpg")
       found.map {
         is =>
           IOStream.stream(is, fos)
+          closeResources(is, fos, zis)
       }
       newImage.exists must_== true
     }
-
-    "Find two files in the same Input Stream" in {
-      val is: InputStream = new FileInputStream(new File(filename))
-      val zis = new ZipInputStream(is)
-      val found1 = ZipReader.find(zis)(_.getName == "LoremIpsum.txt")
-      val found2 = ZipReader.find(zis)(_.getName == "LoremIpsum2.txt")
-      println("TEXTO 1")
-      found1.map {
-        is =>
-          Source.fromInputStream(is).getLines.take(10) foreach println
-      }
-      println("TEXTO 2")
-      found2.map {
-        is =>
-          Source.fromInputStream(is).getLines.take(10) foreach println
-      }
-
-      zis.close()
-      zis.getNextEntry must throwAn[IOException]
-    }
-
   }
 
 }

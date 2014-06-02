@@ -23,11 +23,10 @@ object IOStream {
     doStream(0)
   }
 
-  def copy(is: InputStream, bufferSize: Int = 4096): InputStream = {
+  def copy(is: InputStream, times: Int = 1, bufferSize: Int = 4096): List[InputStream] = {
     val baos = new ByteArrayOutputStream
-    val buffer = new Array[Byte](bufferSize)
     stream(is, baos)
-    new ByteArrayInputStream(baos.toByteArray())
+    for(i <- (1 to times).toList) yield (new ByteArrayInputStream(baos.toByteArray))
   }
 
 }

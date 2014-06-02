@@ -11,9 +11,9 @@ import java.io.InputStream
 
 object ZipReader {
 
-  def uncompress(outputName: String, file: File): UncompressedFile = this.uncompress(outputName, new ZipInputStream(new FileInputStream(file)))
+  def uncompress(outputName: String, file: File): File = this.uncompress(outputName, new ZipInputStream(new FileInputStream(file)))
 
-  def uncompress(outputName: String, zis: ZipInputStream) = {
+  def uncompress(outputName: String, zis: ZipInputStream): File = {
     val output = new File(outputName)
     Stream
       .continually(zis.getNextEntry)
@@ -28,20 +28,11 @@ object ZipReader {
       }
     zis.closeEntry()
     zis.close()
-    new UncompressedFile(output)
+   output
   }
 
-  @deprecated
-  def find(file: File)(p: ZipEntry => Boolean): Option[InputStream] = {
-    val zf = new ZipFile(file)
-    val e = zf.entries
-    val maybeZentry = Stream.continually(e.nextElement).takeWhile(_ => e.hasMoreElements).find(p)
-    maybeZentry.map(zf.getInputStream)
-  }
-
-  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] = {
-    Stream.continually(zis.getNextEntry).takeWhile(_ != null).find(p).map { _ => IOStream.copy(zis) }
-  }
+  def find(zis: ZipInputStream)(p: ZipEntry => Boolean): Option[InputStream] =
+    Stream.continually(zis.getNextEntry).takeWhile(_ != null).find(p).map(_ => zis)
 
   def readLines(zis: ZipInputStream): Iterator[String] = {
     val entry = zis.getNextEntry

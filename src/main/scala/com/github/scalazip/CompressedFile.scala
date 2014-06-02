@@ -5,7 +5,7 @@ import java.util.zip.{ ZipEntry, ZipInputStream }
 
 import scala.io.Source
 
-case class CompressedFile(file: File) extends Unzippable {
+case class CompressedFile(file: File) {
 
   val name = file.getName
 
@@ -15,7 +15,9 @@ case class CompressedFile(file: File) extends Unzippable {
 
   def zipInputStream = new ZipInputStream(new FileInputStream(file))
 
-  def unzipAs(name: String) = ZipReader.uncompress(name, file)
+  def unzipAs(name: String): File = ZipReader.uncompress(name, file)
+  
+  def unzipAtSource(name: String) = unzipAs(new File(file.getParentFile, name).getAbsolutePath)
 
   private def iteratee(zis: ZipInputStream): Stream[ZipEntry] = Stream.continually(zis.getNextEntry).takeWhile(_ != null)
 
@@ -35,13 +37,4 @@ case class CompressedFile(file: File) extends Unzippable {
 
 }
 
-trait Unzippable {
-
-  def file: File
-
-  def unzipAs(name: String): UncompressedFile
-
-  def unzipAtSource(name: String) = unzipAs(new File(file.getParentFile, name).getAbsolutePath)
-
-}
 
