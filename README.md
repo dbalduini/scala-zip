@@ -30,10 +30,10 @@ val files = ZipArchive(file1, file2, file3)
 
 #### To compress the ZipArchive, you can choose between zipAs or zipAtSource
 ```scala
-# To Zip where you are running the JVM
+// To Zip where you are running the JVM
 val zip = myFile.zipAs("images.zip")
 
-# To Zip at the source of the original head file
+// To Zip at the source of the original head file
 val zip = files.zipAtSource("images.zip")
 ```
 
