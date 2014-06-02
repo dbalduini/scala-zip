@@ -7,10 +7,34 @@ scala-zip
   import com.github.scalazip._
 ```
 
-### Compressing a File
+## Writing Zips
+
+### Compressing a single File
 ```scala
-  val myFile = new java.io.File("image.jpg")
-  val zip = myFile.zipAs("image.zip")
+val myFile = new java.io.File("image.jpg")
+val zip = myFile.zipAs("image.zip")
+```
+
+### Creating a ZipArchive
+```scala
+val file1 = new java.io.File("github1.jpg")
+val file2 = new java.io.File("github2.jpg")
+val file3 = new java.io.File("github3.jpg")
+val files = file1 :: file2 :: file3 :: EmptyZip
+```
+#### Or
+
+```scala
+val files = ZipArchive(file1, file2, file3)
+```
+
+#### To compress the ZipArchive, you can choose between zipAs or zipAtSource
+```scala
+# To Zip where you are running the JVM
+val zip = myFile.zipAs("images.zip")
+
+# To Zip at the source of the original head file
+val zip = files.zipAtSource("images.zip")
 ```
 
 ### Uncompressing the file
@@ -44,4 +68,4 @@ val uncompressed = compressed.unzipAs("stuff")
 
 ================
 ### TODO
-* Revise all the tests.
+* Ajust the Zip Reader
