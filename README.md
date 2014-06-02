@@ -37,6 +37,8 @@ val zip = myFile.zipAs("images.zip")
 val zip = files.zipAtSource("images.zip")
 ```
 
+## Reading Zip Files
+
 ### Uncompressing the file
 ```scala
   val zip = new CompressedFile("image.zip")
