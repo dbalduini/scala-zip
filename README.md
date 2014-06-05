@@ -71,3 +71,4 @@ val file = zip.unzipAs("stuff")
 ================
 ### TODO
 * Ajust the Zip Reader
+* Work with encrypted zip files
