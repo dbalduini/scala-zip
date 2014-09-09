@@ -22,9 +22,11 @@ object ZipReader {
         val fileName = entry.getName
         val newFile = new File(output, fileName)
         new File(newFile.getParent).mkdir()
-        val fos = new FileOutputStream(newFile)
-        IOStream.stream(zis, fos)
-        fos.close()
+        if (! fileName.endsWith("/")) {
+          val fos = new FileOutputStream(newFile)
+          IOStream.stream(zis, fos)
+          fos.close()
+        }
       }
     zis.closeEntry()
     zis.close()
