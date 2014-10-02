@@ -21,7 +21,7 @@ object ZipReader {
       .foreach { entry =>
         val fileName = entry.getName
         val newFile = new File(output, fileName)
-        new File(newFile.getParent).mkdir()
+        new File(newFile.getParent).mkdirs()
         if (! fileName.endsWith("/")) {
           val fos = new FileOutputStream(newFile)
           IOStream.stream(zis, fos)
