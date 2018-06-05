@@ -56,7 +56,7 @@ val zip = files.zipAtSource("images.zip")
   }
 ```
 
-## All Togheter with implicit conversions
+## All Together with implicit conversions
 ```scala
 val file1 = new File("image1.jpg")
 val file2 = new File("image2.jpg")
